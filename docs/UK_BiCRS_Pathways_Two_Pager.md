@@ -14,7 +14,7 @@ for retrofit already exists nearby. Purpose-grown energy crops are excluded by d
 genuinely residual and waste biomass.
 
 **Headline:** across residual UK biomass, the best-use recommendation for each region sums to roughly
-**11.9 Mt CO₂ /yr of durable removal** — a screening estimate of what a mature, right-sized UK BiCRS
+**12.8 Mt CO₂ /yr of durable removal** — a screening estimate of what a mature, right-sized UK BiCRS
 sector could deliver from wastes and residues alone, before any dedicated energy crops. The UK is
 unusually well positioned: it pairs a modest but real residue base with the largest offshore CO₂
 storage resource in Europe and two storage hubs already in construction.
@@ -40,6 +40,11 @@ streams that suit anaerobic digestion, waste-to-energy, or hydrothermal routes r
 combustion. Second, the geography is clean: **arable dry residues cluster in East Anglia and the
 east**, while **wet manure dominates the livestock west and north** (Wales, South West England,
 Scotland, Northern Ireland). That split largely determines the recommended pathway region-by-region.
+
+Manure and crop-residue supply are distributed using the **UK June Agricultural Census** (housed
+cattle/pig/poultry numbers for manure; arable-land area for straw), so recoverable manure tracks
+where livestock actually are — near-zero in London and the conurbations, concentrated in Northern
+Ireland, West Wales, the South West, North Yorkshire and southern Scotland.
 
 ---
 
@@ -78,26 +83,27 @@ best use.
 
 | Pathway | Regions | CDR potential | CDR efficiency | Indicative cost | Where |
 |---|---:|---:|---:|---|---|
-| **HTL bio-oil** (pyrolysis of wet residues) | 9 | **3.5 Mt CO₂/yr** | ~50% | $200–400/t | Livestock west/north far from anchors: N. Ireland, Highlands, SW England, W. Scotland |
-| **AD + CCS** (biogas upgrading capture) | 16 | **3.2 Mt CO₂/yr** | ~37% | $145–300/t | Manure/food-waste regions with digesters: Wales, Yorkshire, E. Midlands, London |
-| **WtE + CCS** (capture on energy-from-waste) | 10 | **2.6 Mt CO₂/yr** | ~55% | ~$100–200/t | Urban England + central-belt Scotland |
-| **BECCS** (biomass power + capture) | 2 | **1.8 Mt CO₂/yr** | ~80% | $200–225/t | East Anglia, Essex (near biomass plants + arable straw) |
-| **Biomass waste injection** | 4 | **0.8 Mt CO₂/yr** | ~90% | $125–285/t | Dry-residue regions right on top of storage: Hampshire, Teesside, NE Scotland |
-| **Total** | **41** | **~11.9 Mt CO₂/yr** | | | |
+| **WtE + CCS** (capture on energy-from-waste) | 18 | **4.1 Mt CO₂/yr** | ~55% | ~$100–200/t | Urban England (incl. London), central-belt Scotland |
+| **HTL bio-oil** (hydrothermal liquefaction of wet residues) | 8 | **3.8 Mt CO₂/yr** | ~50% | $200–400/t | Livestock west/north far from anchors: N. Ireland, Highlands, SW England |
+| **AD + CCS** (biogas upgrading capture) | 9 | **2.3 Mt CO₂/yr** | ~37% | $145–300/t | Livestock regions with digesters: Wales, Yorkshire, Shropshire, E. Midlands |
+| **BECCS** (biomass power + capture) | 2 | **1.6 Mt CO₂/yr** | ~80% | $200–225/t | East Anglia, Essex (near biomass plants + arable straw) |
+| **Biomass waste injection** | 4 | **1.0 Mt CO₂/yr** | ~90% | $125–285/t | Dry-residue regions right on top of storage: Hampshire, Teesside, NE Scotland |
+| **Total** | **41** | **~12.8 Mt CO₂/yr** | | | |
 
 **How to read this.** The ranking reflects *where each pathway is the best local fit*, not the ceiling
 for any one technology. Two points for prioritisation:
 
-- **Highest-efficiency, lowest-regret today: WtE + CCS, BECCS, and injection.** They convert the
-  largest share of feedstock carbon into stored CO₂ (55–90%), sit on existing infrastructure, and are
-  close to storage. WtE + CCS is especially attractive — it removes carbon *and* decarbonises waste
-  the UK must manage anyway, and the urban EfW fleet is a ready retrofit base. **Drax alone** (BECCS)
-  represents removal potential of the same order as the entire recommended pathway total, if fully
-  captured — the single most consequential UK decision.
-- **Largest reach, but lower efficiency: HTL bio-oil and AD + CCS.** These dominate on *region count*
-  because they suit the UK's abundant wet/distributed manure where combustion is a poor fit. AD + CCS
-  is cheap where digesters exist; HTL bio-oil is the fallback for wet residues too far from a capture
-  anchor or store, since the densified oil can be injected without gaseous-CO₂ transport.
+- **Biggest and lowest-regret: WtE + CCS.** It is now the single largest pathway by both region
+  count and potential (~4.1 Mt/yr across 18 regions), because MSW is the UK's largest biogenic waste
+  stream and is concentrated in cities that already run energy-from-waste plants. It removes carbon
+  *and* decarbonises waste the UK must manage anyway, converts a high share of feedstock carbon
+  (~55%), and retrofits an existing urban fleet. **BECCS** and **injection** are the highest-efficiency
+  routes (80–90%); **Drax alone** (BECCS) represents removal of the same order as the entire
+  recommended-pathway total if fully captured — the single most consequential UK decision.
+- **Wet-residue routes for the livestock country: HTL bio-oil and AD + CCS.** These serve the
+  distributed manure of the west and north, where combustion is a poor fit. AD + CCS is cheap where
+  digesters exist; HTL bio-oil is the fallback for wet residues too far from a capture anchor or
+  store, since the densified oil can be injected without gaseous-CO₂ transport.
 
 ---
 
@@ -114,7 +120,9 @@ delivered costs in the interactive Atlas.
 ---
 
 *Source: UK BiCRS Atlas (https://hausfath.github.io/bicrs-map-uk/), the UK subset of Frontier's
-BiCRS Atlas. Feedstock from JRC ENSPRESO / Eurostat scaled to UK totals; storage from JRC CO2StoP and
-curated UK CCS projects; facilities curated with capacity-estimated biogenic CO₂. All figures are
-screening-level estimates carrying material uncertainty and are not a substitute for project-level
-diligence. Grounded in Frontier's BiCRS purchasing point of view.*
+BiCRS Atlas. Manure and crop residues distributed by the UK June Agricultural Census (Eurostat Farm
+Structure Survey); MSW and biosolids by population; forestry from JRC ENSPRESO — all scaled to UK
+country totals. Storage from JRC CO2StoP and curated UK CCS projects; facilities curated with
+capacity-estimated biogenic CO₂. All figures are screening-level estimates carrying material
+uncertainty and are not a substitute for project-level diligence. Grounded in Frontier's BiCRS
+purchasing point of view.*
