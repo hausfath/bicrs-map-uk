@@ -262,7 +262,7 @@
         { id: "wwtps", label: "Large WWTPs (\u2265150k PE)", swatch: "sw-wwtp",
           build: r => wwtpLayer(window.UK_WWTPS || [], r.ov,
             w => `${w.pe ? fmt(w.pe / 1000) + "k PE \u00b7 " : ""}${w.country}`) },
-        { id: "projects", label: "CO\u2082 storage projects / hubs", swatch: "sw-proj",
+        { id: "projects", label: "CO\u2082 storage projects & salt caverns", swatch: "sw-proj",
           build: r => storageProjectLayer(window.UK_STORAGE_PROJECTS || [], r.ov) },
         { id: "formations", label: "CO\u2082 storage formations (CO2StoP)", swatch: "sw-form",
           build: r => polygonLayer(window.GEO_UK_STORAGE, r.mid, "CO2StoP (JRC)") },
@@ -346,11 +346,16 @@
     const lg = L.layerGroup();
     list.forEach(p => {
       if (p.lat == null || p.lon == null) return;
+      const cavern = p.kind === "salt_cavern" || p.storage_type === "salt_cavern";
       const r = p.capacity_mtpa ? clamp(6, 6 + Math.sqrt(p.capacity_mtpa) * 3, 16) : 7;
-      const op = p.status === "operational" ? 0.95 : p.status === "construction" ? 0.7 : 0.4;
-      L.circleMarker([p.lat, p.lon], { radius: r, fillColor: "#46b3ff", color: "#eafffb",
-        weight: 1.2, fillOpacity: op, renderer: rnd })
-        .bindPopup(projectPopup(p), { maxWidth: 280 }).addTo(lg);
+      const op = p.status === "operational" ? 0.95 : p.status === "construction" ? 0.7 : 0.42;
+      // Salt caverns (prospective bio-oil / biomass injection sites) get a distinct amber, hollow
+      // marker so they read as "developable, not a CO₂ project" against the blue CO₂ hubs.
+      L.circleMarker([p.lat, p.lon], cavern
+        ? { radius: r, fillColor: "#e0843b", color: "#ffd9ad", weight: 1.4, fillOpacity: 0.4,
+            dashArray: "3 2", renderer: rnd }
+        : { radius: r, fillColor: "#46b3ff", color: "#eafffb", weight: 1.2, fillOpacity: op, renderer: rnd })
+        .bindPopup(projectPopup(p, cavern), { maxWidth: 300 }).addTo(lg);
     });
     return lg;
   }
@@ -411,7 +416,14 @@
       Capacity: <b>${s.capacity_mtpa != null ? fmt(s.capacity_mtpa) + " Mtpa" : "n/a"}</b>
       <div class="pop-src">Source: ${s.source || "—"}</div>`;
   }
-  function projectPopup(p) {
+  function projectPopup(p, cavern) {
+    if (cavern) {
+      return `<b>${p.name}</b><br>Salt-cavern bio-oil / biomass injection site · <b>prospective</b><br>
+        <div class="caveat" style="margin:6px 0">⚠ Not yet developed or permitted for bio-oil/biomass
+        storage in the UK — developable potential, not shovel-ready.</div>
+        ${p.notes ? p.notes + "<br>" : ""}
+        <div class="pop-src">Source: ${p.source || "—"}</div>`;
+    }
     return `<b>${p.name}</b><br>CO₂ storage project · ${cap1(p.status)}<br>
       ${p.storage_type ? "Type: " + (STORAGE_TYPE[p.storage_type] || p.storage_type) + "<br>" : ""}
       ${p.capacity_mtpa ? "Capacity: <b>" + fmt(p.capacity_mtpa) + " Mtpa</b><br>" : ""}${p.country || ""}
@@ -533,12 +545,14 @@
     if (!state.showRoute || !state.openRegion) { return; }
     const t = transportFor(sc, state.openRegion.id);
     if (!t || !t.legs || !t.legs.length) return;
-    // For a capture (gaseous-CO₂) pathway the CO₂ ships to a CO₂-eligible (Class VI/RR) well, which
-    // can differ from the general destination — draw THAT route (co2_legs) so the map matches the
-    // recommended pathway's actual storage destination (item 7). Otherwise draw the general route.
+    // Draw the route to the recommended pathway's ACTUAL store: a capture pathway ships CO₂ to the
+    // CO₂-eligible project (co2_legs); an injection/bio-oil pathway hauls to the salt-cavern /
+    // injection site (inj_legs). Otherwise the general route.
     const rec = recById[state.openRegion.id];
-    const isCapture = rec && PAYLOAD_OF[rec.recommended] === "co2";
-    const legs = (isCapture && t.co2_legs && t.co2_legs.length) ? t.co2_legs : t.legs;
+    const pay = rec && PAYLOAD_OF[rec.recommended];
+    let legs = t.legs;
+    if (pay === "co2" && t.co2_legs && t.co2_legs.length) legs = t.co2_legs;
+    else if ((pay === "slurry" || pay === "bio_oil" || pay === "bio_oil_htl") && t.inj_legs && t.inj_legs.length) legs = t.inj_legs;
     legs.forEach(leg => {
       const m = ROUTE_MODE[leg.mode] || { color: "#aaa", label: leg.mode };
       // ship/barge legs follow real water geometry (leg.path); truck/rail are straight from→to
@@ -959,7 +973,16 @@
     Central North Sea, East Irish Sea). Storage projects/hubs: <b>Northern Endurance Partnership</b>
     (East Coast Cluster, in construction), <b>Liverpool Bay / HyNet</b> (in construction), <b>Acorn</b>
     and <b>Viking</b> (planned) \u2014 plus the non-UK destinations some regions route to (Porthos,
-    Sleipner).</p>
+    Sleipner). These offshore projects are engineered and permitted for <b>gaseous / dense-phase
+    CO\u2082 only</b>, so the CO\u2082-capture pathways (BECCS, WtE+CCS, AD+CCS) route to them.</p>
+    <h3>Bio-oil / biomass injection storage (salt caverns \u2014 prospective)</h3>
+    <p>Biomass-slurry injection and bio-oil sequestration need a store that takes <b>liquids/solids,
+    not gaseous CO\u2082</b> \u2014 the UK's realistic option is <b>salt caverns</b> (Cheshire/Holford,
+    Teesside, East Yorkshire/Aldbrough &amp; Atwick, Lancashire/Preesall, Dorset/Portland, N. Ireland/
+    Islandmagee), shown as amber markers. Bio-oil/biomass storage in salt caverns is a recognised
+    method (Isometric protocol), but <b>no UK site is yet developed or permitted for it</b>, so these
+    are flagged <b>prospective</b>: the injection &amp; bio-oil pathways route to the nearest salt
+    cavern and carry a caution that this storage is developable potential, not shovel-ready.</p>
     <h3>Point sources &amp; WWTPs</h3>
     <p>Curated UK biogenic-CO\u2082 facilities (biomass power, WtE, biogas/AD) with biogenic CO\u2082
     estimated from capacity (UK ETS zero-rates sustainable biomass \u2014 the weakest layer); large
