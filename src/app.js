@@ -215,7 +215,7 @@
       choroRenderer: "svg",
       lowSupplyAware: true,
       statFooter: recs => ({ value: fmt(recs.reduce((s, r) => s + (r.cdr_potential_mtpa || 0), 0)),
-        label: "Mt CO\u2082/yr UK CDR potential" }),
+        label: "Mt CO\u2082/yr UK CDR potential (from domestic feedstocks)" }),
       legendNote: {
         feedstock: "Quantile classes across all UK NUTS-2 regions.",
         recommendation: "Best use per Frontier's KPI ranking, computed per NUTS-2 region (storage transport cost + feedstock density). Click a region for rationale.",
@@ -1003,8 +1003,29 @@
     informs strategy \u2014 it does not substitute for project-level diligence.</p>`;
 
   // ============================================================
+  // Keep the map sized to its container
+  // ============================================================
+  // Leaflet caches the map-container size at init. If layout shifts afterwards — an async web-font
+  // swap reflowing the sidebar, a different device-pixel-ratio / window size on another machine, or
+  // a window resize — that cached size goes stale and the SVG choropleth paths render at the wrong
+  // scale/offset. Symptoms: blank-but-still-hoverable map areas (paths drawn off-position), and those
+  // misplaced transparent paths overlapping UI like the detail-panel close button (clicks land on a
+  // path, so you have to click "off" the ✕). invalidateSize() re-measures and repositions everything.
+  function refitMap() { map.invalidateSize(false); redrawRoute(); }
+  let _resizeTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(_resizeTimer);
+    _resizeTimer = setTimeout(refitMap, 150);
+  });
+  // Re-measure after the web fonts swap in (which reflows the sidebar) and after the first paints.
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refitMap).catch(function () {});
+  requestAnimationFrame(function () { requestAnimationFrame(refitMap); });
+
+  // ============================================================
   // Init
   // ============================================================
   dom.feedHint.textContent = FEEDSTOCK_HINTS[state.feedstock];
   applyHash();
+  // Final safety nudge once the initial scope has rendered and layout has settled.
+  setTimeout(refitMap, 400);
 })();

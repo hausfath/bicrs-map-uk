@@ -13,8 +13,15 @@ density, distance and cost to reach CO₂ storage, soil-nutrient status, and whe
 for retrofit already exists nearby. Purpose-grown energy crops are excluded by design; the focus is
 genuinely residual and waste biomass.
 
-**Headline:** how much durable removal the UK's residual biomass supports depends heavily on **what
-kind of CO₂ storage is available**, so we frame two scenarios:
+**A note on scope.** This brief counts removal from the UK's **own domestic feedstocks** — biomass
+grown or collected in the UK (crop and forestry residues, manure, municipal and sewage waste). It does
+**not** count the much larger biogenic CO₂ from power stations that burn **imported** biomass (chiefly
+wood pellets — Drax, Lynemouth, MGT Teesside). Retrofitting those with capture is a large, separate
+opportunity, treated on its own in §2, because it depends on continued biomass imports rather than UK
+supply.
+
+**Headline (domestic feedstocks):** how much durable removal the UK's own residual biomass supports
+depends heavily on **what kind of CO₂ storage is available**, so we frame two scenarios:
 
 - **Scenario A — gaseous-CO₂ storage only (~8.1 Mt CO₂/yr).** The UK's developed and in-construction
   stores (the offshore CCS hubs) accept **gaseous / dense-phase CO₂ only**. This scenario counts just
@@ -25,10 +32,10 @@ kind of CO₂ storage is available**, so we frame two scenarios:
   permitted for it), the wet livestock regions and dry-residue regions far from a capture anchor gain
   a pathway, lifting potential by **~6.8 Mt CO₂/yr (+84%)**.
 
-Both are screening estimates of what a mature, right-sized UK BiCRS sector could deliver from wastes
-and residues alone, before any dedicated energy crops. The UK is unusually well positioned on the
-capture side: it pairs a modest but real residue base with the largest offshore CO₂ storage resource
-in Europe and two storage hubs already in construction.
+Both are screening estimates of what a mature, right-sized UK BiCRS sector could deliver from domestic
+wastes and residues alone, before any dedicated energy crops. The UK is unusually well positioned on
+the capture side: it pairs a modest but real residue base with the largest offshore CO₂ storage
+resource in Europe and two storage hubs already in construction.
 
 ---
 
@@ -65,11 +72,15 @@ The UK's strongest near-term advantage is a **large existing biomass and waste-c
 can be retrofitted with capture**, avoiding greenfield build. The Atlas maps 26 candidate biogenic
 point sources:
 
-- **Biomass power (11 sites, ~18.9 Mt biogenic CO₂/yr of throughput).** Dominated by **Drax**
-  (~12 Mt/yr biogenic CO₂ — the single largest BECCS opportunity in Europe), plus **Lynemouth**,
-  **MGT Teesside**, **Wilton 10 / Sembcorp Teesside**, **Margam (Port Talbot)**, and a cluster of
-  ~40 MW plants (Snetterton, Sleaford, Brigg, Kent/Sandwich, Ince/Mersey). These anchor **BECCS** in
-  East Anglia and the Humber/Teesside and Mersey clusters.
+- **Biomass power (11 sites, ~18.9 Mt biogenic CO₂/yr of throughput) — mostly *imported* biomass.**
+  The large stations run predominantly on **imported wood pellets**: **Drax** (~12 Mt/yr biogenic
+  CO₂ — the single largest BECCS opportunity in Europe), **Lynemouth** (~2.7), and **MGT Teesside**
+  (~2.0) together account for ~16.7 Mt/yr. Retrofitting them with capture is a **large, concentrated,
+  retrofit-ready removal opportunity — but it sits outside the domestic-feedstock headline** because
+  it depends on continued sustainable-biomass imports (a distinct supply, cost and sustainability
+  question). A cluster of smaller ~40 MW plants (Snetterton, Sleaford, Brigg, Kent/Sandwich,
+  Ince/Mersey) burns largely **domestic** straw and waste wood and *is* reflected in the BECCS line of
+  the scenario tables (East Anglia / Essex).
 - **Waste-to-energy (13 sites, ~3.0 Mt biogenic CO₂/yr).** The urban EfW fleet — Runcorn, Cory
   Riverside/Belvedere, Edmonton, Lakeside, Earls Gate (Scotland) — anchors **WtE + CCS** across the
   English cities and central belt.
@@ -134,6 +145,26 @@ Yorkshire, Lancashire, Dorset, and Islandmagee in Northern Ireland) and bio-oil/
 salt caverns is a credited method, yet **no UK site is developed or permitted for it today**. Treat
 Scenario B as developable potential contingent on that storage being established.
 
+### Domestic feedstocks vs. total including imported-biomass retrofits
+
+The two scenarios above are **domestic-feedstock** potential. Separately, capturing the biogenic CO₂
+from the UK's **imported-biomass power stations** (Drax, Lynemouth, MGT Teesside) would add on the
+order of **~17 Mt CO₂/yr** of BECCS — comparable to, or larger than, the entire domestic potential.
+Combining the two views:
+
+| View | Removal potential | Notes |
+|---|---:|---|
+| Domestic feedstocks, gaseous-CO₂ storage (Scenario A) | **~8.1 Mt CO₂/yr** | Near-term, UK-grown/collected biomass, existing storage |
+| Domestic feedstocks, with salt-cavern injection (Scenario B) | **~14.9 Mt CO₂/yr** | Adds prospective injection storage |
+| + Imported-biomass power-station retrofits | **+~17 Mt CO₂/yr** | Drax/Lynemouth/MGT; depends on continued biomass imports |
+| **Total including imported-biomass retrofits** | **~25–32 Mt CO₂/yr** | Domestic (A or B) + imported-biomass BECCS |
+
+The imported-biomass line is the UK's single largest near-term BECCS lever (Drax alone rivals the
+whole domestic total) and its stations already sit on the storage clusters — but because it relies on
+imported wood pellets, its scale is a **policy and supply-chain choice**, not a property of UK land.
+Frontier's interest is durable, additional, high-quality removal; the domestic-feedstock figures are
+the more directly UK-controllable base, with imported-biomass retrofit as a large optional addition.
+
 **How to read this.** Two points for prioritisation:
 
 - **Biggest and lowest-regret, in both scenarios: WtE + CCS.** ~4.1 Mt/yr across 18 regions — MSW is
@@ -151,13 +182,16 @@ Scenario B as developable potential contingent on that storage being established
 ### Bottom line for the UK
 
 The UK's BiCRS advantage is **an existing combustion/AD fleet to retrofit plus the best offshore CO₂
-storage access in Europe** — which makes the ~8 Mt/yr of CO₂-capture removal (WtE+CCS, BECCS, AD+CCS)
-robust and near-term. The **additional ~7 Mt/yr sits in the wet livestock regions and hinges on a
-storage decision**: developing salt caverns for biomass/bio-oil injection (or building out anaerobic
-digestion) is what converts that latent potential into deliverable removal. The fastest, highest-
-quality tonnes come from capturing CO₂ on the plants already clustered around the Teesside/Humber,
-Mersey, and central-belt hubs; the strategic upside comes from unlocking injection storage. Explore
-any region's rationale, ranked alternatives, and delivered costs in the interactive Atlas.
+storage access in Europe**. From **domestic feedstocks**, ~8 Mt/yr of CO₂-capture removal (WtE+CCS,
+BECCS, AD+CCS) is robust and near-term; a further ~7 Mt/yr sits in the wet livestock regions and
+**hinges on a storage decision** — developing salt caverns for biomass/bio-oil injection (or building
+out anaerobic digestion) converts that latent potential into deliverable removal. Layered on top,
+retrofitting the **imported-biomass power stations** (Drax et al.) offers ~17 Mt/yr more, the single
+largest near-term lever but one contingent on continued sustainable-biomass imports. The fastest,
+highest-quality domestic tonnes come from capturing CO₂ on the plants already clustered around the
+Teesside/Humber, Mersey, and central-belt hubs; the strategic questions are whether to unlock
+injection storage (domestic upside) and how far to lean on imported-biomass BECCS. Explore any
+region's rationale, ranked alternatives, and delivered costs in the interactive Atlas.
 
 ---
 
