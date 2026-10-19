@@ -21,7 +21,10 @@
     bio_oil:   { label: "Bio-oil (pyrolysis)",         color: "#e08a2b" },
     bio_oil_htl: { label: "Bio-oil (HTL)",             color: "#e0b56b" },
     burial:    { label: "Biomass burial",              color: "#b07d3a" },
-    ad_ccs:    { label: "Anaerobic digestion + CCS",   color: "#6b8a9c" },
+    ad_ccs:    { label: "AD + CCS (all biogas carbon)", color: "#6b8a9c" },
+    ad_rng_ccs: { label: "AD RNG + CCS (upgrading CO₂)", color: "#8fb8c9" },
+    ad_rng_ccs_inj: { label: "AD RNG + CCS + digestate injection", color: "#5fa3a8" },
+    ad_ccs_inj: { label: "AD + CCS (all C) + digestate injection", color: "#3f7f8c" },
     biochar:   { label: "Biochar",                     color: "#8aa53f" },
   };
   const FAC_META = {
@@ -97,7 +100,7 @@
   // Mirrors engine_core.PATHWAY_PAYLOAD — the transport payload class per pathway. The landfill-gas
   // pathways move gaseous CO₂ (like BECCS/WtE), so they must be here too, else the frontend would
   // treat them as storage-independent (drawing the wrong route, hiding the transport cost).
-  const PAYLOAD_OF = { beccs: "co2", beccs_pp: "co2", wte_ccs: "co2", ad_ccs: "co2", lfg_ccs: "co2", lfg_rng_ccs: "co2", bio_oil: "bio_oil", bio_oil_htl: "bio_oil_htl", injection: "slurry" };
+  const PAYLOAD_OF = { beccs: "co2", beccs_pp: "co2", wte_ccs: "co2", ad_ccs: "co2", ad_rng_ccs: "co2", ad_rng_ccs_inj: "ad_rng_ccs_inj", ad_ccs_inj: "ad_ccs_inj", lfg_ccs: "co2", lfg_rng_ccs: "co2", bio_oil: "bio_oil", bio_oil_htl: "bio_oil_htl", injection: "slurry" };
   const TRANSPORT_CAP = 100;
 
   // Storage destination shown in the detail panel = the well/project the routed storage access is
@@ -143,7 +146,7 @@
       transport: transportUsd,
     };
   }
-  function regionProsCons(rec, key, profile) {
+  function regionProsCons(rec, key, profile, item) {
     const prof = profile[key];
     let pros = prof.pros.slice(), cons = prof.cons.slice();
     const sa = rec.storage_access, dens = rec.feedstock_density, nut = rec.nutrient_status;
@@ -166,15 +169,16 @@
       else if (distributed) pros.push("Suits the region's diffuse, distributed biomass");
     } else if (dens === "concentrated" && central) pros.push("Biomass is concentrated — supports a central facility");
     if (nut === "excess") {
-      if (key === "bio_oil" || key === "bio_oil_htl" || key === "biochar" || key === "ad_ccs") {
+      if (key === "bio_oil" || key === "bio_oil_htl" || key === "biochar" || key === "ad_ccs" || key === "ad_rng_ccs") {
         pros = pros.filter(x => !/nutrient/i.test(x));
         cons.push("Returns nutrients to soils already in surplus here");
-      } else if (key === "burial" || key === "injection") {
+      } else if (key === "burial" || key === "injection" || key === "ad_rng_ccs_inj" || key === "ad_ccs_inj") {
         pros.push("Removes carbon and nutrients from an over-fertilized landscape");
       }
     }
-    // Retrofit-only pathways: mirror engine_core.region_pros_cons (avail = {pp,wte,ad}).
+    // Retrofit-only pathways: mirror engine_core.region_pros_cons (avail = {pp,wte,ad,ad_rng}).
     const av = rec.avail || { pp: true, wte: true, ad: true };
+    const adRng = av.ad_rng !== undefined ? av.ad_rng : av.ad;   // engine _avail: ad_rng falls back to ad
     if (key === "beccs_pp") {
       if (av.pp && rec.anchor_facility) pros.push("Existing mill to retrofit: " + rec.anchor_facility);
       else if (av.pp) pros.push("Existing pulp/bioenergy mill within procurement range to retrofit");
@@ -184,9 +188,21 @@
       if (av.wte && rec.anchor_facility) pros.push("Existing WtE plant to retrofit: " + rec.anchor_facility);
       else if (!av.wte) cons.push("No existing waste-to-energy plant within range to retrofit");
     }
-    if (key === "ad_ccs") {
+    if (key === "ad_ccs" || key === "ad_ccs_inj") {
       if (av.ad) pros.push("Existing anaerobic-digestion capacity within range to retrofit");
       else cons.push("No existing anaerobic-digestion capacity within range to retrofit");
+    }
+    if (key === "ad_rng_ccs" || key === "ad_rng_ccs_inj") {
+      if (adRng) pros.push("Existing biomethane-upgrading plant within range to retrofit");
+      else cons.push("No existing biomethane-upgrading plant within range to retrofit");
+    }
+    // soil-carbon / fertilizer debits netted into efficiency (mirrors engine_core.debit_cons)
+    if (item && (item.s || item.f)) {
+      const gross = Math.round((item.e + item.s + item.f) * 100);
+      let txt = `Net of counterfactual debits: ${gross}% gross − ${Math.round(item.s * 100)} pts soil carbon the spread `
+        + `${prof.debit_basis === "digestate" ? "digestate" : "manure"} would have built (${prof.soc_h}-yr)`;
+      txt += item.f ? ` − ${Math.round(item.f * 100)} pts replacement fertilizer` : " (no fertilizer debit: nutrient-surplus region)";
+      cons.unshift(txt);
     }
     return [pros.slice(0, 4), cons.slice(0, 4)];
   }
@@ -195,9 +211,9 @@
   function reconstructRanked(rec, profile) {
     return (rec.ranked_keys || []).map(item => {
       const k = item.k, prof = profile[k] || {};
-      const [pros, cons] = regionProsCons(rec, k, profile);
+      const [pros, cons] = regionProsCons(rec, k, profile, item);
       return { key: k, label: prof.label || k, badge: item.b,
-               cdr_efficiency: prof.eff, cost_band: prof.cost, pros: pros, cons: cons };
+               cdr_efficiency: item.e != null ? item.e : prof.eff, cost_band: prof.cost, pros: pros, cons: cons };
     });
   }
 
@@ -551,7 +567,10 @@
     const rec = recById[state.openRegion.id];
     const pay = rec && PAYLOAD_OF[rec.recommended];
     let legs = t.legs;
-    if (pay === "co2" && t.co2_legs && t.co2_legs.length) legs = t.co2_legs;
+    if (pay === "ad_rng_ccs_inj" || pay === "ad_ccs_inj") {
+      // composite: CO₂ to the CO₂-eligible store AND digestate to the injection site
+      legs = (t.co2_legs && t.co2_legs.length ? t.co2_legs : t.legs).concat(t.inj_legs || []);
+    } else if (pay === "co2" && t.co2_legs && t.co2_legs.length) legs = t.co2_legs;
     else if ((pay === "slurry" || pay === "bio_oil" || pay === "bio_oil_htl") && t.inj_legs && t.inj_legs.length) legs = t.inj_legs;
     legs.forEach(leg => {
       const m = ROUTE_MODE[leg.mode] || { color: "#aaa", label: leg.mode };
@@ -655,7 +674,11 @@
       return h;
     }
     const meta = PATH_META[rec.recommended] || { label: rec.recommended_label, color: "#888" };
-    const eff = rec.cdr_efficiency != null ? Math.round(rec.cdr_efficiency * 100) + "%" : "—";
+    let eff = rec.cdr_efficiency != null ? Math.round(rec.cdr_efficiency * 100) + "%" : "—";
+    if (rec.soc_debit || rec.fert_debit) {
+      eff += ` <span style="font-size:11px;opacity:.75">net (${Math.round(rec.cdr_efficiency_gross * 100)}% gross − `
+        + `${Math.round(rec.soc_debit * 100)} soil C − ${Math.round((rec.fert_debit || 0) * 100)} fert.)</span>`;
+    }
     const cdr = rec.cdr_potential_mtpa != null ? fmt(rec.cdr_potential_mtpa) + " Mtpa" : "—";
     // routed transport distance (from the transport model) + delivered storage-transport cost,
     // shown only for storage-dependent pathways (burial/biochar are stored locally — no transport).
@@ -994,8 +1017,15 @@
     distance (good &lt;150 km / moderate &lt;400 km). The detail panel shows a <b>delivered cost</b>
     \u2248 pathway conversion band + transport-to-storage. Retrofit-gated pathways (BECCS pulp &amp;
     paper, WtE+CCS, AD+CCS) are recommendable only within feedstock-procurement range of an existing
-    facility of that type. Wet manure \u2192 AD+CCS where digester capacity exists, else HTL bio-oil;
-    concentrated MSW with a WtE plant in range \u2192 WtE+CCS; dry residues near storage \u2192 BECCS /
+    facility of that type. Wet manure \u2192 AD+CCS where digester capacity exists, else HTL bio-oil.
+    AD comes in two variants: <b>AD RNG+CCS</b> captures the near-pure CO\u2082 vented by biomethane
+    upgrading (the biomethane carbon is sold, not removed) and <b>all-carbon AD+CCS</b> captures the
+    combusted biogas at CHP digesters. Each has a twin that also <b>injects the digestate</b> (~55% of the
+    feed carbon) instead of spreading it, used where both the CO\u2082 leg and the digestate leg clear the
+    $100/tCO\u2082 transport cap. Manure injection, HTL bio-oil from manure and digestate injection are
+    netted for the <b>soil carbon</b> the spread material would have built (50-yr horizon) and
+    <b>replacement fertilizer</b> (production emissions; zero in nutrient-surplus regions); each card
+    shows gross, the two debits and net. Concentrated MSW with a WtE plant in range \u2192 WtE+CCS; dry residues near storage \u2192 BECCS /
     injection.</p>
     <h3>Caveats</h3>
     <p>Tonnages are modelled screening estimates, not measured inventories; storage capacities are
