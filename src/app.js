@@ -48,10 +48,17 @@
     msw_biogenic: "Biogenic fraction of municipal solid waste, Mt/yr — only the biogenic share counts as CDR.",
     manure: "Animal manure dry-matter, Mt/yr. Wet waste → injection / AD, not combustion.",
     wwtp: "Sewage sludge / biosolids dry solids, Mt/yr.",
+    forestry_fuels: "Woody residue from completed hazardous-fuel treatments (thinning, piling, biomass removal, " +
+      "chipping), Mt oven-dry/yr, 2018–2024: USFS (FACTS) + DOI and state (TWIG). Today mostly pile-burned or left. " +
+      "Already included in the forestry layer. Europe: Portugal only, MODELLED from AGIF national fuel-management " +
+      "area × shrub-clearing yield. Canada and other European countries: no open data.",
+    forestry_fuels_wcs: "POTENTIAL, not an estimate: the fuels residue scaled to the Wildfire Crisis Strategy " +
+      "(up to 50M additional acres over 10 years) at today's treatment mix and spatial pattern. US only.",
   };
   const FEEDSTOCK_LABEL = {
     ag: "Agricultural residues", forestry: "Forestry residues",
     msw_biogenic: "MSW (biogenic)", manure: "Animal manure", wwtp: "Human / WWTP biosolids",
+    forestry_fuels: "Wildfire-fuels residue", forestry_fuels_wcs: "Wildfire-fuels residue (WCS potential)",
   };
 
   // ---- Generic helpers ----
@@ -152,7 +159,8 @@
     const sa = rec.storage_access, dens = rec.feedstock_density, nut = rec.nutrient_status;
     // transport-cost note (storage-dependent pathways, where a per-payload delivered cost is known)
     const tbp = rec.transport_by_payload, pay = PAYLOAD_OF[key];
-    const tc = (tbp && pay) ? tbp[pay] : null;
+    // a ranked entry carries its own transport cost (secondary feedstocks haul a different slurry)
+    const tc = (item && item.t !== undefined) ? item.t : ((tbp && pay) ? tbp[pay] : null);
     if (tc != null) {
       if (tc > TRANSPORT_CAP) cons.unshift(`Transport to the nearest operating well ~$${fmt(tc)}/tCO₂ — exceeds the $${TRANSPORT_CAP}/tCO₂ viability cap, so this pathway is not viable here`);
       else if (tc >= 66) cons.push(`Transport to the nearest operating well is costly (~$${fmt(tc)}/tCO₂)`);
@@ -213,7 +221,8 @@
       const k = item.k, prof = profile[k] || {};
       const [pros, cons] = regionProsCons(rec, k, profile, item);
       return { key: k, label: prof.label || k, badge: item.b,
-               cdr_efficiency: item.e != null ? item.e : prof.eff, cost_band: prof.cost, pros: pros, cons: cons };
+               cdr_efficiency: item.e != null ? item.e : prof.eff, cost_band: prof.cost, pros: pros, cons: cons,
+               feedstock: item.fs, cdr_potential_mtpa: item.p, transport_usd: item.t };
     });
   }
 
@@ -303,7 +312,9 @@
       // forestry total is fuels residue (thinning/pile/chipping, largely additional) vs commercial.
       let sub = unit;
       if (lab === "Forestry residues" && feed.forestry_fuels > 0) {
-        sub = `${unit} · incl. ~${fmt(feed.forestry_fuels)} from wildfire-fuels treatment`;
+        sub = `${unit} · incl. ~${fmt(feed.forestry_fuels)} from wildfire-fuels treatment`
+          + (feed.forestry_fuels_low != null ? ` (low case ${fmt(feed.forestry_fuels_low)}`
+             + (feed.forestry_fuels_wcs ? `; WCS scale-up potential ${fmt(feed.forestry_fuels_wcs)})` : ")") : "");
       }
       html += `<tr><td class="lab">${lab}<div class="unc">${sub}</div></td><td class="val">${fmt(v)}</td></tr>`;
     });
@@ -734,21 +745,24 @@
     if (!rec.ranked || !rec.ranked.length) return "";
     const badgeClass = b => "rk-" + b.toLowerCase().replace(/[^a-z]+/g, "");
     let html = `<div class="d-sec-title">CDR options ranked — best to worst here</div>`;
+    const FS_LABEL = { dry: "crop + forestry residues", wet: "manure + biosolids", msw: "biogenic MSW" };
+    const multiFs = new Set(rec.ranked.map(p => p.feedstock).filter(Boolean)).size > 1;
     rec.ranked.forEach((p, i) => {
       const color = (PATH_META[p.key] || {}).color || "#888";
       const pros = (p.pros || []).map(x => `<li>${x}</li>`).join("");
       const cons = (p.cons || []).map(x => `<li>${x}</li>`).join("");
       // delivered (all-in) cost per ranked pathway, when a transport cost is known for its payload
-      const ptc = (rec.transport_by_payload && PAYLOAD_OF[p.key]) ? rec.transport_by_payload[PAYLOAD_OF[p.key]] : null;
+      const ptc = (p.transport_usd !== undefined && p.transport_usd !== null) ? p.transport_usd
+        : ((rec.transport_by_payload && PAYLOAD_OF[p.key]) ? rec.transport_by_payload[PAYLOAD_OF[p.key]] : null);
       const pdc = (ptc != null) ? deliveredCost(p.cost_band, ptc) : null;
       const deliveredStr = pdc ? ` · delivered ≈ <b>${pdc.range}/tCO₂</b>` : "";
       html += `<div class="rank-item">
         <div class="rank-head">
           <span class="rank-num" style="background:${color}">${i + 1}</span>
-          <span class="rank-name">${p.label}</span>
+          <span class="rank-name">${p.label}${multiFs && p.feedstock ? ` <span class="rank-fs">· ${FS_LABEL[p.feedstock] || p.feedstock}</span>` : ""}</span>
           <span class="rank-badge ${badgeClass(p.badge)}">${p.badge}</span>
         </div>
-        <div class="rank-meta">${Math.round((p.cdr_efficiency || 0) * 100)}% CDR efficiency · ${p.cost_band || ""}${deliveredStr}</div>
+        <div class="rank-meta">${Math.round((p.cdr_efficiency || 0) * 100)}% CDR efficiency${p.cdr_potential_mtpa != null ? ` · ~${fmt(p.cdr_potential_mtpa)} Mt CO₂/yr` : ""} · ${p.cost_band || ""}${deliveredStr}</div>
         <div class="rank-pc"><ul class="pc-pros">${pros}</ul><ul class="pc-cons">${cons}</ul></div>
       </div>`;
     });
@@ -767,13 +781,15 @@
   function renderLegend() {
     const sc = SCOPES[state.scope];
     if (state.mode === "feedstock") {
-      dom.legendTitle.textContent = FEEDSTOCK_LABEL[state.feedstock] + " (Mt/yr)";
+      // county-scale fuels residue is mostly < 1 kt, so show those layers in kt/yr
+      const kt = /^forestry_fuels/.test(state.feedstock), k = kt ? 1000 : 1;
+      dom.legendTitle.textContent = FEEDSTOCK_LABEL[state.feedstock] + (kt ? " (kt odt/yr)" : " (Mt/yr)");
       const b = state.breaks, ranges = [];
       let prev = 0;
       for (let i = 0; i < GREENS.length; i++) { const hi = i < b.length ? b[i] : null; ranges.push([prev, hi]); prev = hi; }
       let html = "";
       ranges.forEach((rg, i) => {
-        const lab = rg[1] == null ? `≥ ${fmt(rg[0])}` : `${fmt(rg[0])} – ${fmt(rg[1])}`;
+        const lab = rg[1] == null ? `≥ ${fmt(rg[0] * k)}` : `${fmt(rg[0] * k)} – ${fmt(rg[1] * k)}`;
         html += `<div class="legend-row"><span class="box" style="background:${GREENS[i]}"></span>${lab}</div>`;
       });
       html += `<div class="legend-row"><span class="box" style="background:${NODATA}"></span>No / negligible data</div>`;
@@ -874,6 +890,18 @@
 
     return loadScope(id).then(() => {
       state.scope = id;
+      // wildfire-fuels layers: fuels residue in North America (US) and Europe (Portugal, modelled);
+      // the WCS scale-up potential is US-only. Other regions show "no data".
+      document.querySelectorAll("#feedstock-select option.na-only").forEach(o => {
+        const ok = o.value === "forestry_fuels" ? (id === "na" || id === "eu") : id === "na";
+        o.hidden = o.disabled = !ok;
+      });
+      const fuelsOk = state.feedstock === "forestry_fuels" ? (id === "na" || id === "eu")
+        : state.feedstock === "forestry_fuels_wcs" ? id === "na" : true;
+      if (!fuelsOk) {
+        dom.feedSelect.value = "forestry"; state.feedstock = "forestry";
+        dom.feedHint.textContent = FEEDSTOCK_HINTS.forestry;
+      }
       closeDetail();
       hideHoverTip();
 

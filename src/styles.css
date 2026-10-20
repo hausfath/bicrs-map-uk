@@ -273,6 +273,7 @@ select:hover { border-color: #3a4a57; }
 .rank-num { width: 21px; height: 21px; border-radius: 7px; color: #06140f; font-family: var(--mono); font-size: 11px; font-weight: 600;
   display: flex; align-items: center; justify-content: center; flex: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.25); }
 .rank-name { font-size: 13.5px; font-weight: 700; flex: 1; letter-spacing: -.1px; }
+.rank-fs { font-weight: 500; font-size: 11.5px; opacity: .7; }
 .rank-badge { font-family: var(--mono); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding: 3px 7px; border-radius: 6px; white-space: nowrap; }
 .rk-recommended { background: var(--accent-deep); color: #eafffb; }
 .rk-runnerup { background: #2c5a6e; color: #d6f0fb; }
